@@ -16,7 +16,7 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def help_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     pesan = (
         "📖 **DAFTAR PERINTAH BOT**\n\n"
-        "🎣 `/fishing` - Mulai memancing ikan\n"
+        "🎣 `/mancing` - Mulai memancing ikan\n"
         "🎒 `/bag` - Cek isi tas & saldo koin\n"
         "💰 `/jual` - Jual ikan di tas jadi koin\n"
         "🛒 `/shop` - Beli joran yang lebih sakti\n"
