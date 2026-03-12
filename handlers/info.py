@@ -21,8 +21,9 @@ async def help_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "💰 `/jual` - Jual ikan di tas jadi koin\n"
         "🛒 `/shop` - Beli joran yang lebih sakti\n"
         "👤 `/profil` - Lihat Level, XP, dan status kamu\n"
-        "❓ `/help` - Nampilin bantuan ini"
         "🎁 `/daily` - Klaim hadiah koin harian gratis\n"
+        "❓ `/help` - Nampilin bantuan ini"
+        
     )
     await update.message.reply_text(pesan, parse_mode="Markdown")
 
