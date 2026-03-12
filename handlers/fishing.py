@@ -5,8 +5,8 @@ async def fishing_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     current_time = time.time()
     last_fishing = player.get('last_fishing', 0)
-    if current_time - last_fishing < 5:
-        sisa = int(5 - (current_time - last_fishing))
+    if current_time - last_fishing < 30:
+        sisa = int(30 - (current_time - last_fishing))
         await update.message.reply_text(f"⏳ Tunggu {sisa} detik lagi!")
         return
 
