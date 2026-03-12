@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 # --- KONFIGURASI ADMIN ---
-ADMIN_ID = 12345678  # <--- GANTI JADI ID LO!
+ADMIN_ID = 7573097201 # <--- GANTI JADI ID LO!
 
 # 1. TAMBAH KOIN
 async def add_coin_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
