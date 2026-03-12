@@ -1,15 +1,22 @@
-# Daftar Ikan, Harga Jual, dan Kelangkaan
-FISH_DATA = {
-    "Teri": {"price": 10, "chance": 50},
-    "Lele": {"price": 50, "chance": 30},
-    "Nila": {"price": 100, "chance": 15},
-    "Paus": {"price": 1000, "chance": 4},
-    "Nemo": {"price": 5000, "chance": 1}
+FISHING_RODS = {
+    "Bambu": {"price": 0, "bonus": 0},
+    "Kayu": {"price": 1000, "bonus": 10},
+    "Besi": {"price": 5000, "bonus": 25},
+    "Emas": {"price": 20000, "bonus": 50},
+    "Berlian": {"price": 50000, "bonus": 100}
 }
 
-# Daftar Joran (Nanti buat di fitur Shop)
-FISHING_RODS = {
-    "Bambu": {"bonus": 0, "price": 0},
-    "Serat Karbon": {"bonus": 5, "price": 1000},
-    "Berlian": {"bonus": 15, "price": 10000}
+FISH_DATA = {
+    "Teri": {"price": 10},
+    "Lele": {"price": 50},
+    "Nila": {"price": 150},
+    "Paus": {"price": 500},
+    "Nemo": {"price": 2000}
+}
+
+# DAFTAR UMPAN BARU
+BAITS = {
+    "Cacing": {"price": 50, "bonus": 5},
+    "Pelet": {"price": 150, "bonus": 15},
+    "Udang": {"price": 400, "bonus": 35}
 }
