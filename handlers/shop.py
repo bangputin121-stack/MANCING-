@@ -1,7 +1,9 @@
+import time
 from telegram import Update
 from telegram.ext import ContextTypes
-from game_data import FISHING_RODS, BAITS
+from game_data import FISHING_RODS, BAITS, FISH_DATA
 
+# 🛒 1. TOKO JORAN & UMPAN
 async def shop_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     db = context.bot_data['db']
@@ -16,7 +18,7 @@ async def shop_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         pesan += "\n🪱 **UMPAN (Isi 10):**\n"
         for k, v in BAITS.items():
             pesan += f"• {k}: {v['price']} koin\n"
-        await update.message.reply_text(pesan + "\nBeli: `/shop [nama]`\nContoh: `/shop Cacing`")
+        await update.message.reply_text(pesan + "\nBeli: `/shop [nama]`\nContoh: `/shop Cacing`", parse_mode="Markdown")
         return
 
     item = " ".join(args).title()
@@ -46,4 +48,47 @@ async def shop_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("❌ Barang tidak ada di toko.")
 
-# (Tetap sertakan sell_handler dan daily_handler di bawahnya seperti biasa)
+# 💰 2. JUAL IKAN
+async def sell_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    db = context.bot_data['db']
+    player = db.get_player(user_id)
+    inventory = player.get('inventory', [])
+
+    if not inventory:
+        await update.message.reply_text("🎒 Tas kamu kosong, belum ada ikan buat dijual.")
+        return
+
+    total_hasil = 0
+    for ikan in inventory:
+        total_hasil += FISH_DATA.get(ikan, {}).get('price', 5)
+
+    player['balance'] += total_hasil
+    player['inventory'] = [] # Kosongkan tas
+    db.update_player(user_id, player)
+
+    await update.message.reply_text(f"💰 Semua ikan terjual! Kamu dapat **{total_hasil} koin**.")
+
+# 🎁 3. HADIAH HARIAN
+async def daily_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    db = context.bot_data['db']
+    player = db.get_player(user_id)
+    
+    current_time = time.time()
+    last_daily = player.get('last_daily', 0)
+
+    # Cooldown 24 jam (86400 detik)
+    if current_time - last_daily < 86400:
+        sisa_detik = int(86400 - (current_time - last_daily))
+        jam = sisa_detik // 3600
+        menit = (sisa_detik % 3600) // 60
+        await update.message.reply_text(f"⏳ Kamu sudah ambil hadiah hari ini. Balik lagi dalam {jam} jam {menit} menit.")
+        return
+
+    bonus = 500
+    player['balance'] += bonus
+    player['last_daily'] = current_time
+    db.update_player(user_id, player)
+
+    await update.message.reply_text(f"🎁 Hadiah harian diklaim! Kamu dapat **{bonus} koin**.")
