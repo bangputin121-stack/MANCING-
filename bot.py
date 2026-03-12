@@ -4,8 +4,10 @@ from telegram.ext import Application, CommandHandler
 from database import Database
 from handlers.info import start_handler, help_handler
 from handlers.fishing import fishing_handler
+from handlers.inventory import bag_handler
+from handlers.shop import sell_handler
 
-# 1. Konfigurasi Logging (Biar muncul di Deploy Logs Railway)
+# 1. Konfigurasi Logging agar muncul di Deploy Logs Railway
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', 
     level=logging.INFO
@@ -21,13 +23,15 @@ def main():
     # 4. Bangun Aplikasi Bot
     app = Application.builder().token(BOT_TOKEN).build()
     
-    # 5. Simpan Database ke dalam Bot Data (Biar bisa diakses semua handler)
+    # 5. Simpan Database ke dalam Bot Data agar bisa diakses semua handler
     app.bot_data['db'] = db
 
     # 6. DAFTAR PERINTAH (HANDLERS)
     app.add_handler(CommandHandler("start", start_handler))
     app.add_handler(CommandHandler("help", help_handler))
     app.add_handler(CommandHandler("fishing", fishing_handler))
+    app.add_handler(CommandHandler("bag", bag_handler))
+    app.add_handler(CommandHandler("jual", sell_handler))
 
     # 7. Nyalakan Mesin!
     print("---------------------------------------")
