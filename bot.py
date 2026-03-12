@@ -11,7 +11,7 @@ from handlers.admin import (
 
 def main():
     # Ambil Token dari Environment Variable Railway
-    TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+    TOKEN = os.getenv("BOT_TOKEN")
     db = Database()
 
     app = ApplicationBuilder().token(TOKEN).build()
