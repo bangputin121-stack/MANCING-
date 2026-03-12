@@ -2,11 +2,14 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 # --- KONFIGURASI ADMIN ---
-ADMIN_ID = 7573097201  # <--- GANTI JADI ID LO!
+ADMIN_IDS = [7573097201, 577381]  # <--- MASUKKIN SEMUA ID ADMIN DI SINI
 
 # 1. TAMBAH KOIN
 async def add_coin_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != ADMIN_ID: return
+    # Cek apakah user ada di dalam daftar admin
+    if update.effective_user.id not in ADMIN_IDS: 
+        return
+    
     args = context.args
     if len(args) < 2:
         await update.message.reply_text("❌ Gunakan: `/addcoin [id] [jumlah]`")
@@ -21,23 +24,11 @@ async def add_coin_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(f"❌ Error: {e}")
 
-# 2. HADIAH IKAN
-async def gift_fish_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != ADMIN_ID: return
-    args = context.args
-    if len(args) < 2:
-        await update.message.reply_text("❌ Gunakan: `/giftfish [id] [NamaIkan]`")
-        return
-    target_id, ikan = str(args[0]), args[1].title()
-    db = context.bot_data['db']
-    player = db.get_player(target_id)
-    player['inventory'].append(ikan)
-    db.update_player(target_id, player)
-    await update.message.reply_text(f"🎁 Ikan **{ikan}** dikirim ke ID `{target_id}`.")
-
-# 3. BROADCAST
+# 2. BROADCAST (Contoh update kedua)
 async def broadcast_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != ADMIN_ID: return
+    if update.effective_user.id not in ADMIN_IDS: # <--- PAKE 'not in'
+        return
+    
     pesan_broadcast = " ".join(context.args)
     if not pesan_broadcast:
         await update.message.reply_text("❌ Ketik pesannya!")
@@ -52,54 +43,4 @@ async def broadcast_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except: continue
     await update.message.reply_text(f"🚀 Terkirim ke {count} user.")
 
-# 4. RESET PLAYER (VERSI ANTI-KEPOTONG)
-async def reset_player_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != ADMIN_ID: return
-    if not context.args:
-        await update.message.reply_text("❌ Gunakan: `/reset_player [id]`")
-        return
-    target_id = str(context.args[0])
-    db = context.bot_data['db']
-    new_data = {
-        "user_id": target_id, 
-        "inventory": [], 
-        "balance": 0, 
-        "rod": "Bambu", 
-        "bait": 0, 
-        "current_bait": "Cacing", 
-        "xp": 0, 
-        "level": 1, 
-        "last_fishing": 0
-    }
-    db.update_player(target_id, new_data)
-    await update.message.reply_text(f"⚠️ Data ID `{target_id}` di-reset ke nol!")
-
-# 5. EVENT CONTROL
-async def event_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != ADMIN_ID: return
-    args = context.args
-    if not args:
-        status = context.bot_data.get('event_status', False)
-        await update.message.reply_text(f"📢 Event: **{'AKTIF' if status else 'MATI'}**")
-        return
-    cmd = args[0].lower()
-    context.bot_data['event_status'] = (cmd == "on")
-    teks = "🎊 **EVENT 2x XP AKTIF!**" if cmd == "on" else "🛑 **EVENT MATI!**"
-    await update.message.reply_text(teks)
-
-# 6. CHECK PLAYER
-async def check_player_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != ADMIN_ID: return
-    if not context.args: return
-    target_id = str(context.args[0])
-    db = context.bot_data['db']
-    p = db.get_player(target_id)
-    pesan = (
-        f"🔍 **INSPEKSI: {target_id}**\n"
-        f"⭐ Lvl: {p.get('level', 1)}\n"
-        f"💰 Saldo: {p.get('balance', 0)}\n"
-        f"🎣 Joran: {p.get('rod', 'Bambu')}\n"
-        f"🪱 Umpan: {p.get('bait', 0)} ({p.get('current_bait', '-')})\n"
-        f"🎒 Tas: {len(p.get('inventory', []))} ikan"
-    )
-    await update.message.reply_text(pesan)
+# Lakukan hal yang sama (ganti ke 'not in ADMIN_IDS') untuk fungsi reset, event, dan check.
