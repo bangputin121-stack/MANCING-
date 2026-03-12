@@ -6,6 +6,7 @@ from handlers.info import start_handler, help_handler, profile_handler
 from handlers.fishing import fishing_handler
 from handlers.inventory import bag_handler
 from handlers.shop import sell_handler, shop_handler
+from handlers.shop import sell_handler, shop_handler, daily_handler
 
 # 1. Konfigurasi Logging agar aktivitas bot terlihat di Railway
 logging.basicConfig(
@@ -34,7 +35,8 @@ def main():
     app.add_handler(CommandHandler("bag", bag_handler))
     app.add_handler(CommandHandler("jual", sell_handler))
     app.add_handler(CommandHandler("shop", shop_handler))
-
+    app.add_handler(CommandHandler("daily", daily_handler))
+    
     # 7. Pesan Start di Console
     print("---------------------------------------")
     print("🎣 Fishing Bot World v2.0 is RUNNING!")
