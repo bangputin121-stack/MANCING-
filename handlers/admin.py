@@ -1,46 +1,62 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-# --- KONFIGURASI ADMIN ---
-ADMIN_IDS = [7573097201, 577381]  # <--- MASUKKIN SEMUA ID ADMIN DI SINI
+# --- MASUKKAN ID ADMIN DI SINI ---
+ADMIN_IDS = [12345678, 87654321] # Ganti dengan ID lo dan ID temen lo
 
-# 1. TAMBAH KOIN
 async def add_coin_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Cek apakah user ada di dalam daftar admin
-    if update.effective_user.id not in ADMIN_IDS: 
-        return
-    
-    args = context.args
-    if len(args) < 2:
-        await update.message.reply_text("❌ Gunakan: `/addcoin [id] [jumlah]`")
-        return
+    if update.effective_user.id not in ADMIN_IDS: return
     try:
-        target_id, amount = str(args[0]), int(args[1])
+        target_id, amount = str(context.args[0]), int(context.args[1])
         db = context.bot_data['db']
         player = db.get_player(target_id)
         player['balance'] += amount
         db.update_player(target_id, player)
-        await update.message.reply_text(f"✅ Saldo ID `{target_id}` ditambah {amount} koin.")
-    except Exception as e:
-        await update.message.reply_text(f"❌ Error: {e}")
+        await update.message.reply_text(f"✅ {amount} koin dikirim ke `{target_id}`")
+    except:
+        await update.message.reply_text("❌ Gunakan: `/addcoin [id] [jumlah]`")
 
-# 2. BROADCAST (Contoh update kedua)
+async def gift_fish_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id not in ADMIN_IDS: return
+    try:
+        target_id, ikan = str(context.args[0]), context.args[1].title()
+        db = context.bot_data['db']
+        player = db.get_player(target_id)
+        player['inventory'].append(ikan)
+        db.update_player(target_id, player)
+        await update.message.reply_text(f"🎁 {ikan} dikirim ke `{target_id}`")
+    except:
+        await update.message.reply_text("❌ Gunakan: `/giftfish [id] [ikan]`")
+
 async def broadcast_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id not in ADMIN_IDS: # <--- PAKE 'not in'
-        return
-    
-    pesan_broadcast = " ".join(context.args)
-    if not pesan_broadcast:
-        await update.message.reply_text("❌ Ketik pesannya!")
-        return
+    if update.effective_user.id not in ADMIN_IDS: return
+    msg = " ".join(context.args)
+    if not msg: return
     db = context.bot_data['db']
-    all_users = list(db.data.keys())
-    count = 0
-    for user_id in all_users:
-        try:
-            await context.bot.send_message(chat_id=user_id, text=f"📢 **PENGUMUMAN ADMIN**\n\n{pesan_broadcast}", parse_mode="Markdown")
-            count += 1
+    for uid in db.data.keys():
+        try: await context.bot.send_message(chat_id=uid, text=f"📢 **INFO:**\n{msg}")
         except: continue
-    await update.message.reply_text(f"🚀 Terkirim ke {count} user.")
+    await update.message.reply_text("🚀 Broadcast terkirim.")
 
-# Lakukan hal yang sama (ganti ke 'not in ADMIN_IDS') untuk fungsi reset, event, dan check.
+async def reset_player_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id not in ADMIN_IDS: return
+    try:
+        target_id = str(context.args[0])
+        db = context.bot_data['db']
+        new_data = {"user_id": target_id, "inventory": [], "balance": 0, "rod": "Bambu", "bait": 0, "xp": 0, "level": 1}
+        db.update_player(target_id, new_data)
+        await update.message.reply_text(f"⚠️ ID `{target_id}` di-reset.")
+    except: pass
+
+async def event_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id not in ADMIN_IDS: return
+    status = context.args[0].lower() == "on" if context.args else False
+    context.bot_data['event_status'] = status
+    await update.message.reply_text(f"📢 Event 2x XP: **{'ON' if status else 'OFF'}**")
+
+async def check_player_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id not in ADMIN_IDS: return
+    target_id = str(context.args[0])
+    db = context.bot_data['db']
+    p = db.get_player(target_id)
+    await update.message.reply_text(f"🔍 ID: {target_id}\n💰 Bal: {p['balance']}\n🎣 Rod: {p['rod']}")
