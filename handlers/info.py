@@ -5,7 +5,7 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     await update.message.reply_text(
         f"👋 Halo {user.first_name}!\n\n"
-        "Selamat datang di **Fishing RPG Bot**.\n"
+        "Selamat datang di **MANCING MANIA Bot**.\n"
         "Gunakan `/fishing` untuk mulai memancing dan `/help` untuk melihat daftar perintah.\n\n"
         "Jangan lupa beli umpan dulu di `/shop` ya!"
     )
