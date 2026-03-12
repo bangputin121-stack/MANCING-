@@ -10,6 +10,6 @@ FISH_DATA = {
 # Daftar Joran (Nanti buat di fitur Shop)
 FISHING_RODS = {
     "Bambu": {"bonus": 0, "price": 0},
-    "Serat Karbon": {"bonus": 5, "price": 2000},
+    "Serat Karbon": {"bonus": 5, "price": 1000},
     "Berlian": {"bonus": 15, "price": 10000}
 }
