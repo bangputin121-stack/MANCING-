@@ -2,7 +2,7 @@ import logging
 import os
 from telegram.ext import Application, CommandHandler
 from database import Database
-from handlers.info import start_handler, help_handler
+from handlers.info import start_handler, help_handler, profile_handler
 from handlers.fishing import fishing_handler
 from handlers.inventory import bag_handler
 from handlers.shop import sell_handler, shop_handler
@@ -17,7 +17,7 @@ logging.basicConfig(
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 def main():
-    # 3. Inisialisasi Database (Local JSON)
+    # 3. Inisialisasi Database
     db = Database()
     
     # 4. Membangun Aplikasi Bot
@@ -29,15 +29,16 @@ def main():
     # 6. DAFTAR SEMUA PERINTAH (HANDLERS)
     app.add_handler(CommandHandler("start", start_handler))
     app.add_handler(CommandHandler("help", help_handler))
+    app.add_handler(CommandHandler("profil", profile_handler))
     app.add_handler(CommandHandler("fishing", fishing_handler))
     app.add_handler(CommandHandler("bag", bag_handler))
     app.add_handler(CommandHandler("jual", sell_handler))
     app.add_handler(CommandHandler("shop", shop_handler))
 
-    # 7. Pesan Start di Console Railway
+    # 7. Pesan Start di Console
     print("---------------------------------------")
     print("🎣 Fishing Bot World v2.0 is RUNNING!")
-    print("Semua fitur (Fishing, Bag, Shop) AKTIF.")
+    print("Fitur Aktif: Start, Help, Profil, Fishing, Bag, Jual, Shop")
     print("---------------------------------------")
     
     # 8. Jalankan Bot
