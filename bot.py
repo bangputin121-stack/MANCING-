@@ -9,7 +9,7 @@ from handlers.admin import *
 
 def main():
     db = Database()
-    app = Application.builder().token(os.getenv("BOT_TOKEN")).build()
+    app = Application.builder().token(os.getenv("TELEGRAM_BOT_TOKEN")).build()
     app.bot_data['db'] = db
 
     # Handlers
