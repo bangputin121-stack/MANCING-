@@ -2,49 +2,60 @@ import random
 import time
 from telegram import Update
 from telegram.ext import ContextTypes
-from game_data import FISH_DATA, FISHING_RODS
+from game_data import FISH_DATA, FISHING_RODS, BAITS
 
 async def fishing_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     db = context.bot_data['db']
     player = db.get_player(user_id)
     
+    # 1. CEK UMPAN
+    stok_umpan = player.get('bait', 0)
+    if stok_umpan <= 0:
+        await update.message.reply_text("❌ Umpan habis! Beli dulu di `/shop`.")
+        return
+
+    # 2. CEK COOLDOWN
     current_time = time.time()
-    last_fishing = player.get('last_fishing', 0)
-    if current_time - last_fishing < 30:
-        sisa = int(30 - (current_time - last_fishing))
+    if current_time - player.get('last_fishing', 0) < 30:
+        sisa = int(30 - (current_time - player.get('last_fishing', 0)))
         await update.message.reply_text(f"⏳ Tunggu {sisa} detik lagi!")
         return
 
-    nama_joran = player.get('rod', 'Bambu')
-    bonus = FISHING_RODS.get(nama_joran, {}).get('bonus', 0)
-    luck = random.randint(1, 100) + bonus
+    # 3. PROSES MANCING
+    umpan_nama = player.get('current_bait', 'Cacing')
+    bonus_umpan = BAITS.get(umpan_nama, {}).get('bonus', 0)
+    bonus_joran = FISHING_RODS.get(player.get('rod', 'Bambu'), {}).get('bonus', 0)
     
-    # Penentuan Ikan
-    if luck >= 95: dapat = "Nemo"
+    luck = random.randint(1, 100) + bonus_joran + bonus_umpan
+    
+    if luck >= 100: dapat = "Nemo"
     elif luck >= 85: dapat = "Paus"
     elif luck >= 70: dapat = "Nila"
     elif luck >= 40: dapat = "Lele"
     else: dapat = "Teri"
 
-    # LOGIKA XP & EVENT
+    # XP & Event
     base_xp = random.randint(15, 30)
-    is_event = context.bot_data.get('event_status', False)
-    xp_gain = base_xp * 2 if is_event else base_xp
+    xp_gain = base_xp * 2 if context.bot_data.get('event_status') else base_xp
     
-    current_xp = player.get('xp', 0) + xp_gain
+    # Simpan Perubahan
+    player['bait'] = stok_umpan - 1
+    player['inventory'] = player.get('inventory', []) + [dapat]
+    player['last_fishing'] = current_time
+    player['xp'] = player.get('xp', 0) + xp_gain
+    
+    # Level Up
     lvl = player.get('level', 1)
-    target = lvl * 100
-    
-    msg_lvl = ""
-    if current_xp >= target:
-        lvl += 1
-        current_xp = 0
-        msg_lvl = f"\n🎊 **LEVEL UP ke {lvl}!**"
+    if player['xp'] >= (lvl * 100):
+        player['level'] += 1
+        player['xp'] = 0
+        msg_lvl = f"\n🎊 **LEVEL UP KE {player['level']}!**"
+    else: msg_lvl = ""
 
-    # Simpan
-    player.update({"inventory": player.get('inventory', []) + [dapat], "last_fishing": current_time, "xp": current_xp, "level": lvl})
     db.update_player(user_id, player)
-    
-    status_event = " [EVENT 2x XP]" if is_event else ""
-    await update.message.reply_text(f"🎣 Pakai **{nama_joran}**\n✨ Dapat: **{dapat}** (+{xp_gain} XP){status_event}{msg_lvl}")
+    await update.message.reply_text(
+        f"🎣 Mancing pake **{umpan_nama}**...\n"
+        f"✨ Dapat: **{dapat}** (+{xp_gain} XP)\n"
+        f"🪱 Sisa Umpan: {player['bait']}{msg_lvl}"
+    )
