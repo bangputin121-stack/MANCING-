@@ -12,7 +12,7 @@ async def fishing_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # --- SISTEM COOLDOWN ---
     current_time = time.time()
     last_fishing = player.get('last_fishing', 0)
-    cooldown_time = 30  # Jeda waktu dalam detik (silakan ubah sesuai selera)
+    cooldown_time = 3  # Jeda waktu dalam detik (silakan ubah sesuai selera)
     
     if current_time - last_fishing < cooldown_time:
         sisa_waktu = int(cooldown_time - (current_time - last_fishing))
