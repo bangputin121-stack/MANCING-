@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 # --- KONFIGURASI ADMIN ---
-ADMIN_ID = 7573097201 # <--- GANTI JADI ID LO!
+ADMIN_ID = 7573097201  # <--- GANTI JADI ID LO!
 
 # 1. TAMBAH KOIN
 async def add_coin_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -11,12 +11,15 @@ async def add_coin_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if len(args) < 2:
         await update.message.reply_text("❌ Gunakan: `/addcoin [id] [jumlah]`")
         return
-    target_id, amount = str(args[0]), int(args[1])
-    db = context.bot_data['db']
-    player = db.get_player(target_id)
-    player['balance'] += amount
-    db.update_player(target_id, player)
-    await update.message.reply_text(f"✅ Saldo ID `{target_id}` ditambah {amount} koin.")
+    try:
+        target_id, amount = str(args[0]), int(args[1])
+        db = context.bot_data['db']
+        player = db.get_player(target_id)
+        player['balance'] += amount
+        db.update_player(target_id, player)
+        await update.message.reply_text(f"✅ Saldo ID `{target_id}` ditambah {amount} koin.")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error: {e}")
 
 # 2. HADIAH IKAN
 async def gift_fish_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -49,17 +52,27 @@ async def broadcast_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except: continue
     await update.message.reply_text(f"🚀 Terkirim ke {count} user.")
 
-# 4. RESET PLAYER (Bagian yang tadi error)
+# 4. RESET PLAYER (VERSI ANTI-KEPOTONG)
 async def reset_player_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID: return
-    args = context.args
-    if not args: return
-    target_id = str(args[0])
+    if not context.args:
+        await update.message.reply_text("❌ Gunakan: `/reset_player [id]`")
+        return
+    target_id = str(context.args[0])
     db = context.bot_data['db']
-    # Pastikan baris di bawah ini tertulis lengkap sampai tanda kurung tutup }
-    new_data = {"user_id": target_id, "inventory": [], "balance": 0, "rod": "Bambu", "xp": 0, "level": 1, "last_fishing": 0}
+    new_data = {
+        "user_id": target_id, 
+        "inventory": [], 
+        "balance": 0, 
+        "rod": "Bambu", 
+        "bait": 0, 
+        "current_bait": "Cacing", 
+        "xp": 0, 
+        "level": 1, 
+        "last_fishing": 0
+    }
     db.update_player(target_id, new_data)
-    await update.message.reply_text(f"⚠️ Data ID `{target_id}` di-reset!")
+    await update.message.reply_text(f"⚠️ Data ID `{target_id}` di-reset ke nol!")
 
 # 5. EVENT CONTROL
 async def event_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -81,5 +94,12 @@ async def check_player_handler(update: Update, context: ContextTypes.DEFAULT_TYP
     target_id = str(context.args[0])
     db = context.bot_data['db']
     p = db.get_player(target_id)
-    pesan = f"🔍 **INSPEKSI: {target_id}**\n⭐ Lvl: {p.get('level')}\n💰 Saldo: {p.get('balance')}\n🎣 Joran: {p.get('rod')}\n🎒 Tas: {len(p.get('inventory'))} ikan"
+    pesan = (
+        f"🔍 **INSPEKSI: {target_id}**\n"
+        f"⭐ Lvl: {p.get('level', 1)}\n"
+        f"💰 Saldo: {p.get('balance', 0)}\n"
+        f"🎣 Joran: {p.get('rod', 'Bambu')}\n"
+        f"🪱 Umpan: {p.get('bait', 0)} ({p.get('current_bait', '-')})\n"
+        f"🎒 Tas: {len(p.get('inventory', []))} ikan"
+    )
     await update.message.reply_text(pesan)
