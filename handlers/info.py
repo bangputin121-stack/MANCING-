@@ -7,7 +7,7 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     pesan = (
         f"👋 Halo {user_name}!\n\n"
         "Selamat datang di **Fishing Bot World**! 🎣\n"
-        "Mancing, naikkan level, dan beli joran terbaik!\n\n"
+        "Jadilah pemancing legendaris di seluruh dunia!\n\n"
         "Ketik `/help` untuk melihat daftar perintah."
     )
     await update.message.reply_text(pesan, parse_mode="Markdown")
@@ -23,7 +23,6 @@ async def help_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "👤 `/profil` - Lihat Level, XP, dan status kamu\n"
         "🎁 `/daily` - Klaim hadiah koin harian gratis\n"
         "❓ `/help` - Nampilin bantuan ini"
-        
     )
     await update.message.reply_text(pesan, parse_mode="Markdown")
 
@@ -41,12 +40,13 @@ async def profile_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     saldo = player.get('balance', 0)
     total_ikan = len(player.get('inventory', []))
     
-    # Membuat tampilan progres bar sederhana (opsional tapi keren)
+    # Membuat tampilan progres bar (Biar estetik)
     progres = int((xp / target_xp) * 10)
     bar = "🟩" * progres + "⬜" * (10 - progres)
     
     pesan = (
         f"👤 **PROFIL PEMANCING**\n"
+        f"🆔 **ID:** `{user_id}`\n"
         f"━━━━━━━━━━━━━━━\n"
         f"⭐ **Level:** {lvl}\n"
         f"📈 **XP:** `{xp}/{target_xp}`\n"
