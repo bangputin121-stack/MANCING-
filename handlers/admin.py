@@ -49,11 +49,37 @@ async def broadcast_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except: continue
     await update.message.reply_text(f"🚀 Terkirim ke {count} user.")
 
-# 4. RESET PLAYER
+# 4. RESET PLAYER (Bagian yang tadi error)
 async def reset_player_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID: return
     args = context.args
     if not args: return
     target_id = str(args[0])
     db = context.bot_data['db']
-    new_data = {"user_id": target_id, "inventory": [], "balance": 0, "rod": "Bambu", "xp": 0, "
+    # Pastikan baris di bawah ini tertulis lengkap sampai tanda kurung tutup }
+    new_data = {"user_id": target_id, "inventory": [], "balance": 0, "rod": "Bambu", "xp": 0, "level": 1, "last_fishing": 0}
+    db.update_player(target_id, new_data)
+    await update.message.reply_text(f"⚠️ Data ID `{target_id}` di-reset!")
+
+# 5. EVENT CONTROL
+async def event_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != ADMIN_ID: return
+    args = context.args
+    if not args:
+        status = context.bot_data.get('event_status', False)
+        await update.message.reply_text(f"📢 Event: **{'AKTIF' if status else 'MATI'}**")
+        return
+    cmd = args[0].lower()
+    context.bot_data['event_status'] = (cmd == "on")
+    teks = "🎊 **EVENT 2x XP AKTIF!**" if cmd == "on" else "🛑 **EVENT MATI!**"
+    await update.message.reply_text(teks)
+
+# 6. CHECK PLAYER
+async def check_player_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != ADMIN_ID: return
+    if not context.args: return
+    target_id = str(context.args[0])
+    db = context.bot_data['db']
+    p = db.get_player(target_id)
+    pesan = f"🔍 **INSPEKSI: {target_id}**\n⭐ Lvl: {p.get('level')}\n💰 Saldo: {p.get('balance')}\n🎣 Joran: {p.get('rod')}\n🎒 Tas: {len(p.get('inventory'))} ikan"
+    await update.message.reply_text(pesan)
