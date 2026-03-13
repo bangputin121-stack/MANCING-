@@ -1,37 +1,37 @@
+import json
 import os
-from telegram.ext import Application, CommandHandler
-from database import load_data, save_data
-from handlers.info import start_handler, help_handler, profile_handler
-from handlers.fishing import fishing_handler
-from handlers.inventory import bag_handler
-from handlers.shop import sell_handler, shop_handler, daily_handler
-from handlers.admin import *
 
-def main():
-    db = Database()
-    app = Application.builder().token(os.getenv("TELEGRAM_BOT_TOKEN")).build()
-    app.bot_data['db'] = db
+class Database:
+    def __init__(self, db_file='database.json'):
+        self.db_file = db_file
+        if not os.path.exists(self.db_file):
+            with open(self.db_file, 'w') as f:
+                json.dump({}, f)
 
-    # Handlers
-    app.add_handler(CommandHandler("start", start_handler))
-    app.add_handler(CommandHandler("help", help_handler))
-    app.add_handler(CommandHandler("profil", profile_handler))
-    app.add_handler(CommandHandler("fishing", fishing_handler))
-    app.add_handler(CommandHandler("bag", bag_handler))
-    app.add_handler(CommandHandler("jual", sell_handler))
-    app.add_handler(CommandHandler("shop", shop_handler))
-    app.add_handler(CommandHandler("daily", daily_handler))
-    
-    # Admin Handlers
-    app.add_handler(CommandHandler("addcoin", add_coin_handler))
-    app.add_handler(CommandHandler("giftfish", gift_fish_handler))
-    app.add_handler(CommandHandler("broadcast", broadcast_handler))
-    app.add_handler(CommandHandler("reset_player", reset_player_handler))
-    app.add_handler(CommandHandler("event", event_handler))
-    app.add_handler(CommandHandler("check", check_player_handler))
+    def load_data(self):
+        with open(self.db_file, 'r') as f:
+            return json.load(f)
 
-    print("🚀 BOT READY WITH ADMIN FEATURES!")
-    app.run_polling()
+    def save_data(self, data):
+        with open(self.db_file, 'w') as f:
+            json.dump(data, f, indent=4)
 
-if __name__ == "__main__":
-    main()
+    def get_user(self, user_id):
+        data = self.load_data()
+        u_id = str(user_id)
+        if u_id not in data:
+            data[u_id] = {
+                "balance": 0,
+                "joran": "Bambu Biasa",
+                "umpan": "Cacing",
+                "inventory": ["Bambu Biasa", "Cacing"]
+            }
+            self.save_data(data)
+        return data[u_id]
+
+    def update_user(self, user_id, key, value):
+        data = self.load_data()
+        u_id = str(user_id)
+        if u_id in data:
+            data[u_id][key] = value
+            self.save_data(data)
