@@ -1,37 +1,45 @@
-import json
 import os
+import logging
+from telegram.ext import ApplicationBuilder, CommandHandler
+from database import Database
+from handlers.fishing import fishing_handler
 
-class Database:
-    def __init__(self, db_file='database.json'):
-        self.db_file = db_file
-        if not os.path.exists(self.db_file):
-            with open(self.db_file, 'w') as f:
-                json.dump({}, f)
+# 1. Setting Log (Biar lo bisa liat error di Railway Log kalau ada masalah)
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
 
-    def load_data(self):
-        with open(self.db_file, 'r') as f:
-            return json.load(f)
+# 2. Inisialisasi Database
+db = Database()
 
-    def save_data(self, data):
-        with open(self.db_file, 'w') as f:
-            json.dump(data, f, indent=4)
+async def start(update, context):
+    """Perintah /start buat nyapa member baru"""
+    user = update.effective_user
+    db.get_user(user.id) # Otomatis daftarin ke database
+    await update.message.reply_text(
+        f"Halo {user.first_name}! Selamat datang di Bot Mancing Mania. 🎣\n"
+        "Gunakan perintah /mancing untuk mulai menangkap ikan!"
+    )
 
-    def get_user(self, user_id):
-        data = self.load_data()
-        u_id = str(user_id)
-        if u_id not in data:
-            data[u_id] = {
-                "balance": 0,
-                "joran": "Bambu Biasa",
-                "umpan": "Cacing",
-                "inventory": ["Bambu Biasa", "Cacing"]
-            }
-            self.save_data(data)
-        return data[u_id]
+def main():
+    # 3. Ambil Token dari Environment Variable Railway
+    TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+    
+    if not TOKEN:
+        print("❌ ERROR: TELEGRAM_BOT_TOKEN tidak ditemukan di Variable Railway!")
+        return
 
-    def update_user(self, user_id, key, value):
-        data = self.load_data()
-        u_id = str(user_id)
-        if u_id in data:
-            data[u_id][key] = value
-            self.save_data(data)
+    # 4. Bangun Aplikasi Bot
+    app = ApplicationBuilder().token(TOKEN).build()
+
+    # 5. Daftar Perintah (Handlers)
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("mancing", fishing_handler))
+
+    # 6. Jalankan Bot
+    print("🚀 BOT JALAN! Silakan tes /mancing di Telegram.")
+    app.run_polling()
+
+if __name__ == '__main__':
+    main()
