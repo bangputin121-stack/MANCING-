@@ -1,52 +1,35 @@
 import json
 import os
 
-class Database:
-    def __init__(self, filename="database.json"):
-        self.filename = filename
-        self.data = self.load()
+DB_FILE = 'database.json'
 
-    def load(self):
-        # Cek jika file database ada, jika tidak buat baru
-        if not os.path.exists(self.filename):
-            return {}
-        try:
-            with open(self.filename, 'r') as f:
-                return json.load(f)
-        except:
-            return {}
+def load_data():
+    if not os.path.exists(DB_FILE):
+        return {}
+    with open(DB_FILE, 'r') as f:
+        return json.load(f)
 
-    def save(self):
-        # Simpan data ke file JSON
-        with open(self.filename, 'w') as f:
-            json.dump(self.data, f, indent=4)
+def save_data(data):
+    with open(DB_FILE, 'w') as f:
+        json.dump(data, f, indent=4)
 
-    def get_player(self, user_id):
-        user_id = str(user_id)
-        
-        # Jika user belum ada, buat data default
-        if user_id not in self.data:
-            self.data[user_id] = {
-                "inventory": [],
-                "balance": 0,
-                "rod": "Bambu",
-                "xp": 0,
-                "level": 1,
-                "last_fishing": 0
-            }
-            self.save()
-        
-        # LOGIKA UPDATE: Pastikan pemain lama juga punya kolom XP dan Level
-        player = self.data[user_id]
-        if "xp" not in player:
-            player["xp"] = 0
-        if "level" not in player:
-            player["level"] = 1
-            
-        return player
+def get_user_data(user_id):
+    data = load_data()
+    user_id = str(user_id)
+    if user_id not in data:
+        # Data default buat member baru
+        data[user_id] = {
+            "balance": 0,
+            "joran": "Bambu Biasa",
+            "umpan": "Cacing",
+            "inventory": ["Bambu Biasa", "Cacing"]
+        }
+        save_data(data)
+    return data[user_id]
 
-    def update_player(self, user_id, player_data):
-        # Update data pemain dan simpan
-        user_id = str(user_id)
-        self.data[user_id] = player_data
-        self.save()
+def update_user_data(user_id, key, value):
+    data = load_data()
+    user_id = str(user_id)
+    if user_id in data:
+        data[user_id][key] = value
+        save_data(data)
