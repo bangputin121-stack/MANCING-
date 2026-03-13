@@ -2,43 +2,47 @@ import os
 import logging
 from telegram.ext import ApplicationBuilder, CommandHandler
 from database import Database
-from handlers.fishing import fishing_handler
 
-# 1. Setting Log (Biar lo bisa liat error di Railway Log kalau ada masalah)
+# IMPORT HANDLERS (Pastikan nama file dan fungsinya sesuai di folder handlers)
+from handlers.fishing import fishing_handler
+# Buka tanda pagar (#) di bawah ini kalau filenya sudah ada:
+# from handlers.shop import shop_handler 
+# from handlers.profile import profile_handler
+
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 
-# 2. Inisialisasi Database
 db = Database()
 
 async def start(update, context):
-    """Perintah /start buat nyapa member baru"""
     user = update.effective_user
-    db.get_user(user.id) # Otomatis daftarin ke database
+    db.get_user(user.id)
     await update.message.reply_text(
-        f"Halo {user.first_name}! Selamat datang di Bot Mancing Mania. 🎣\n"
-        "Gunakan perintah /mancing untuk mulai menangkap ikan!"
+        f"Halo {user.first_name}! 🎣\n\n"
+        "Perintah yang tersedia:\n"
+        "/mancing - Mulai memancing\n"
+        "/profil - Cek saldo & joran\n"
+        "/shop - Toko peralatan"
     )
 
 def main():
-    # 3. Ambil Token dari Environment Variable Railway
     TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-    
     if not TOKEN:
-        print("❌ ERROR: TELEGRAM_BOT_TOKEN tidak ditemukan di Variable Railway!")
         return
 
-    # 4. Bangun Aplikasi Bot
     app = ApplicationBuilder().token(TOKEN).build()
 
-    # 5. Daftar Perintah (Handlers)
+    # DAFTAR COMMAND DI SINI
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("mancing", fishing_handler))
+    
+    # Tambahkan baris di bawah ini sesuai perintah yang lo mau aktifin:
+    # app.add_handler(CommandHandler("shop", shop_handler))
+    # app.add_handler(CommandHandler("profil", profile_handler))
 
-    # 6. Jalankan Bot
-    print("🚀 BOT JALAN! Silakan tes /mancing di Telegram.")
+    print("🚀 BOT JALAN! Semua perintah terdaftar.")
     app.run_polling()
 
 if __name__ == '__main__':
