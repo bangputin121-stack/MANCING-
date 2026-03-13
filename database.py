@@ -1,35 +1,41 @@
 import json
 import os
 
-DB_FILE = 'database.json'
+class Database:
+    def __init__(self, db_file='database.json'):
+        self.db_file = db_file
+        # Membuat file database.json jika belum ada
+        if not os.path.exists(self.db_file):
+            with open(self.db_file, 'w') as f:
+                json.dump({}, f)
 
-def load_data():
-    if not os.path.exists(DB_FILE):
-        return {}
-    with open(DB_FILE, 'r') as f:
-        return json.load(f)
+    def load_data(self):
+        try:
+            with open(self.db_file, 'r') as f:
+                return json.load(f)
+        except:
+            return {}
 
-def save_data(data):
-    with open(DB_FILE, 'w') as f:
-        json.dump(data, f, indent=4)
+    def save_data(self, data):
+        with open(self.db_file, 'w') as f:
+            json.dump(data, f, indent=4)
 
-def get_user_data(user_id):
-    data = load_data()
-    user_id = str(user_id)
-    if user_id not in data:
-        # Data default buat member baru
-        data[user_id] = {
-            "balance": 0,
-            "joran": "Bambu Biasa",
-            "umpan": "Cacing",
-            "inventory": ["Bambu Biasa", "Cacing"]
-        }
-        save_data(data)
-    return data[user_id]
+    def get_user(self, user_id):
+        data = self.load_data()
+        u_id = str(user_id)
+        if u_id not in data:
+            # Data awal buat member baru
+            data[u_id] = {
+                "balance": 0,
+                "joran": "Bambu Biasa",
+                "umpan": "Cacing"
+            }
+            self.save_data(data)
+        return data[u_id]
 
-def update_user_data(user_id, key, value):
-    data = load_data()
-    user_id = str(user_id)
-    if user_id in data:
-        data[user_id][key] = value
-        save_data(data)
+    def update_user(self, user_id, key, value):
+        data = self.load_data()
+        u_id = str(user_id)
+        if u_id in data:
+            data[u_id][key] = value
+            self.save_data(data)
