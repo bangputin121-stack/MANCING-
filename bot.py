@@ -1,6 +1,6 @@
 import os
 from telegram.ext import Application, CommandHandler
-from database import Database
+from database import load_data, save_data
 from handlers.info import start_handler, help_handler, profile_handler
 from handlers.fishing import fishing_handler
 from handlers.inventory import bag_handler
